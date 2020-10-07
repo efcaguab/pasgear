@@ -3,7 +3,6 @@ Plotting IRI
 
 ``` r
 library(magrittr)
-library(pasgear)
 library(ggplot2)
 
 cambodia_structure <- suppressMessages(

@@ -12,7 +12,6 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(magrittr)
-library(pasgear)
 library(ggplot2)
 
 cambodia_structure <- suppressMessages(
