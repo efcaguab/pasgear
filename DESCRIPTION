@@ -10,10 +10,15 @@ Authors@R:
 Description: Analysis, visualisation, and effort calculation on fisheries.
 License: MIT + file LICENSE
 Suggests: 
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     ggplot2 (>= 3.3.2)
+Depends: 
+    R (>= 2.10)
+VignetteBuilder: knitr
