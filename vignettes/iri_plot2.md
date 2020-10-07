@@ -1,0 +1,59 @@
+Plotting IRI
+================
+
+``` r
+library(magrittr)
+library(pasgear)
+library(ggplot2)
+
+cambodia_structure <- suppressMessages(
+  # read data
+  readr::read_csv("data-raw/iri_cambodia.csv")) %>%
+  # make column names R friendly
+  janitor::clean_names() %>%
+  dplyr::mutate(type = dplyr::if_else(type == "N/A", NA_character_, type)) %>%
+  dplyr::rename(percent_n = percent_no, percent_freq = percent_frq) %>%
+  # make percentages percentages (between 0 and 1)
+  dplyr::mutate_at(dplyr::vars(dplyr::contains("percent")), ~ ./100)
+
+cambodia_iri <- cambodia_structure %>%
+  # make sure "types" are ordered by iri
+  dplyr::mutate(type = forcats::fct_reorder(type, iri, .desc = T)) %>%
+  # remove types with zero freq
+  dplyr::filter(percent_freq > 0)
+
+# Calculate some variables for the plot
+cambodia_iri_plot_df <- cambodia_iri %>%
+  dplyr::mutate(ymax = percent_weight, 
+                ymin = -percent_n, 
+                xmax = cumsum(percent_freq), 
+                xmin = dplyr::lag(xmax, default = 0), 
+                xbreaks = (xmin + xmax)/2)
+
+# Number of types to show
+n_sp <- 6
+cambodia_iri_plot_df %>%
+  ggplot() +
+  geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = iri), 
+            colour = "black") +
+  # a dashed horizontal line on zero
+  geom_hline(yintercept = 0, linetype = 2) +
+  # Set x axis
+  scale_x_continuous(breaks = cambodia_iri_plot_df$xbreaks[1:n_sp], 
+                     labels = scales::percent(cambodia_iri_plot_df$percent_freq[1:n_sp]), 
+                     minor_breaks = cambodia_iri_plot_df$xmax, 
+                     sec.axis = sec_axis(trans = ~., 
+                                         breaks = cambodia_iri_plot_df$xbreaks[1:n_sp], 
+                                         labels = cambodia_iri_plot_df$type[1:n_sp])) +
+  # Set y axis
+  scale_y_continuous(labels = scales::label_percent()) +
+  theme_minimal() +
+  theme(axis.text.x.top = element_text(angle = 90), 
+        legend.position = "none", 
+        panel.grid.major.x = element_line(linetype = 2)) +
+  
+  labs(title = "IRI plot of a Cambodian fish community",
+       x = "% frequency", y = "← % number ← | → % weight →")
+```
+
+![](iri_plot2_files/figure-gfm/setup-1.png)<!-- -->
